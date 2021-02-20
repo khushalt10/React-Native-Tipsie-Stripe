@@ -15,7 +15,7 @@ import {
   Text,
   StatusBar,
 } from 'react-native';
-
+import axios from 'axios'
 import stripe from 'tipsi-stripe'
 import Button from './components/Button';
 import { demoCardFormParameters } from './scenes/demodata/demodata';
@@ -43,6 +43,23 @@ export default class CardFormScreen extends PureComponent {
     }
   }
 
+  makePayment = async() => {
+    this.setState({ loading: true})
+
+    axios({
+      method: 'POST',
+      url:'https://us-central1-react-native-stripe-e2839.cloudfunctions.net/completePaymentWithStripe',
+      data: {
+        amount: 102,
+        currency: 'inr',
+        token: this.state.paymentMethod.id
+      }
+    }).then( res => {
+      console.log(res);
+      this.setState({ loading: false})
+    })
+  }
+
   render() {
     const { loading, paymentMethod } = this.state
 
@@ -57,7 +74,10 @@ export default class CardFormScreen extends PureComponent {
         />
         <View style={styles.paymentMethod} >
           {paymentMethod && (
-            <Text style={styles.instruction}>Payment Method: {JSON.stringify(paymentMethod.id)}</Text>
+            <>
+              <Text style={styles.instruction}>Payment Method: {JSON.stringify(paymentMethod.id)}</Text>
+              <Button text="Make Payment" loading={loading} onPress={this.makePayment} />
+            </>
           )}
         </View>
       </View>
